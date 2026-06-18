@@ -1,9 +1,25 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, StrictBool
+
+
+def _reject_blank_path(value: Any) -> Any:
+    if isinstance(value, str) and not value.strip():
+        raise ValueError("path must not be empty")
+    return value
+
+
+def _validate_tolerance_number(value: Any) -> float:
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        raise ValueError("absolute tolerance must be a number")
+    return float(value)
+
+
+NonEmptyPath = Annotated[Path, BeforeValidator(_reject_blank_path)]
+ToleranceNumber = Annotated[float, BeforeValidator(_validate_tolerance_number), Field(ge=0)]
 
 
 class StrictModel(BaseModel):
@@ -11,19 +27,19 @@ class StrictModel(BaseModel):
 
 
 class NumericTolerance(StrictModel):
-    absolute: float = Field(ge=0)
+    absolute: ToleranceNumber
 
 
 class ExpectedResult(StrictModel):
     rows: list[dict[str, Any]]
     numeric_tolerance: NumericTolerance | None = None
     order_by: list[str] = Field(default_factory=list)
-    allow_extra_columns: bool = False
+    allow_extra_columns: StrictBool = False
 
 
 class Fixture(StrictModel):
     table: str = Field(min_length=1)
-    path: Path
+    path: NonEmptyPath
 
 
 class SqlShapeChecks(StrictModel):
@@ -45,8 +61,8 @@ class Contract(StrictModel):
     adapter: Literal["duckdb"]
     connection: dict[str, Any] = Field(default_factory=dict)
     fixtures: list[Fixture] = Field(default_factory=list)
-    setup_sql: list[Path] = Field(default_factory=list)
-    query: Path
+    setup_sql: list[NonEmptyPath] = Field(default_factory=list)
+    query: NonEmptyPath
     expect: ExpectedResult
     checks: SqlShapeChecks = Field(default_factory=SqlShapeChecks)
     metadata: dict[str, Any] = Field(default_factory=dict)
