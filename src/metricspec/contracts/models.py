@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, StrictBool
@@ -9,6 +9,8 @@ from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, StrictBool
 
 def _reject_blank_path(value: Any) -> Any:
     if isinstance(value, str) and not value.strip():
+        raise ValueError("path must not be empty")
+    if isinstance(value, PurePath) and not value.parts:
         raise ValueError("path must not be empty")
     return value
 
@@ -23,6 +25,7 @@ def _validate_tolerance_number(value: Any) -> float:
 
 
 NonEmptyPath = Annotated[Path, BeforeValidator(_reject_blank_path)]
+SchemaVersion = Annotated[int, Field(strict=True, ge=1, le=1)]
 ToleranceNumber = Annotated[float, BeforeValidator(_validate_tolerance_number), Field(ge=0)]
 
 
@@ -56,7 +59,7 @@ class SqlShapeChecks(StrictModel):
 
 
 class Contract(StrictModel):
-    schema_version: Literal[1]
+    schema_version: SchemaVersion
     name: str = Field(min_length=1)
     description: str | None = None
     severity: Literal["low", "medium", "high", "critical"] = "medium"

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from pydantic import ValidationError
 
@@ -77,6 +79,19 @@ def test_contract_rejects_blank_query_path() -> None:
         )
 
 
+def test_contract_rejects_empty_query_path_object() -> None:
+    with pytest.raises(ValidationError):
+        Contract.model_validate(
+            {
+                "schema_version": 1,
+                "name": "net_revenue",
+                "adapter": "duckdb",
+                "query": Path(""),
+                "expect": {"rows": []},
+            }
+        )
+
+
 def test_contract_rejects_blank_fixture_path() -> None:
     with pytest.raises(ValidationError):
         Contract.model_validate(
@@ -86,6 +101,47 @@ def test_contract_rejects_blank_fixture_path() -> None:
                 "adapter": "duckdb",
                 "query": "queries/net_revenue.sql",
                 "fixtures": [{"table": "orders", "path": ""}],
+                "expect": {"rows": []},
+            }
+        )
+
+
+def test_contract_rejects_empty_fixture_path_object() -> None:
+    with pytest.raises(ValidationError):
+        Contract.model_validate(
+            {
+                "schema_version": 1,
+                "name": "net_revenue",
+                "adapter": "duckdb",
+                "query": "queries/net_revenue.sql",
+                "fixtures": [{"table": "orders", "path": Path("")}],
+                "expect": {"rows": []},
+            }
+        )
+
+
+def test_contract_rejects_empty_setup_sql_path_object() -> None:
+    with pytest.raises(ValidationError):
+        Contract.model_validate(
+            {
+                "schema_version": 1,
+                "name": "net_revenue",
+                "adapter": "duckdb",
+                "query": "queries/net_revenue.sql",
+                "setup_sql": [Path("")],
+                "expect": {"rows": []},
+            }
+        )
+
+
+def test_contract_rejects_bool_schema_version() -> None:
+    with pytest.raises(ValidationError):
+        Contract.model_validate(
+            {
+                "schema_version": True,
+                "name": "net_revenue",
+                "adapter": "duckdb",
+                "query": "queries/net_revenue.sql",
                 "expect": {"rows": []},
             }
         )
