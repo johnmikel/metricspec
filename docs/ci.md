@@ -44,8 +44,9 @@ jobs:
           path: reports/
 ```
 
-If MetricSpec is not installed as part of the repository, replace
-`uv run metricspec` with `uvx metricspec`.
+Before package publication, run CI from a repository checkout with
+`uv run metricspec`. After package publication, downstream projects can use
+`uvx metricspec` consistently instead.
 
 ## Outputs
 

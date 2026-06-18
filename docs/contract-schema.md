@@ -10,11 +10,13 @@ severity: medium
 owner: analytics
 tags: [revenue, regression]
 adapter: duckdb
+connection: {}
 fixtures:
   - table: orders
     path: ../fixtures/orders.csv
   - table: refunds
     path: ../fixtures/refunds.csv
+setup_sql: []
 query: ../queries/net_revenue_by_region.sql
 expect:
   order_by: [region]
@@ -45,6 +47,29 @@ metadata:
 - `query`: Path to the SQL query file, resolved relative to the contract file.
 - `expect.rows`: Expected result rows as a list of objects.
 
+## Optional Metadata
+
+- `description`: Optional human-readable contract description.
+- `severity`: Optional impact label. Allowed values are `low`, `medium`,
+  `high`, and `critical`. Defaults to `medium`.
+- `owner`: Optional owner string.
+- `tags`: Optional list of strings for grouping or filtering outside
+  MetricSpec.
+- `metadata`: Optional object for project-specific values. MetricSpec preserves
+  this information in the loaded contract but does not interpret custom
+  metadata.
+
+## Reserved Fields
+
+These fields are accepted by the schema but are not used by the current v1
+runner:
+
+- `connection`: Optional object reserved for future adapter configuration. The
+  v1 DuckDB runner ignores it.
+- `setup_sql`: Optional list of non-empty SQL file paths reserved for future
+  setup behavior. The current runner ignores it. Use `.sql` fixtures when setup
+  SQL is needed today.
+
 ## Fixtures
 
 `fixtures` is a list of local inputs loaded before the query runs. Each fixture
@@ -61,6 +86,7 @@ MetricSpec compares row count and values exactly by default.
 
 - `rows`: Expected rows. Each key is an expected output column.
 - `numeric_tolerance.absolute`: Optional absolute tolerance for numeric values.
+  The value must be a finite, non-negative number.
 - `order_by`: Optional list of columns used to sort actual and expected rows
   before comparison.
 - `allow_extra_columns`: Defaults to `false`. When `false`, unexpected actual
@@ -76,9 +102,3 @@ executes:
 - `required_columns` and `forbidden_columns`
 
 These checks are lightweight guardrails, not a SQL parser.
-
-## Metadata
-
-`description`, `severity`, `owner`, and `tags` are first-class metadata fields.
-`metadata` accepts additional project-specific values. MetricSpec preserves this
-information in the loaded contract but does not interpret custom metadata.

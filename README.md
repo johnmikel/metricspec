@@ -8,10 +8,21 @@ when a business metric returns the wrong answer.
 
 ## Quick Start
 
+From a local checkout before MetricSpec is published as a package:
+
+```bash
+uv sync --extra dev
+uv run metricspec init demo
+cd metricspec-demo
+uv run --project .. metricspec run
+```
+
+After package publication, the same flow can use `uvx` without a checkout:
+
 ```bash
 uvx metricspec init demo
 cd metricspec-demo
-metricspec run
+uvx metricspec run
 ```
 
 ## What MetricSpec Is
