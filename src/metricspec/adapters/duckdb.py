@@ -8,6 +8,7 @@ from typing import Any
 import duckdb
 
 from metricspec.contracts.models import Fixture
+from metricspec.execution.fixtures import resolve_fixture_path
 
 
 def _quote_identifier(identifier: str) -> str:
@@ -15,12 +16,6 @@ def _quote_identifier(identifier: str) -> str:
         raise ValueError("identifier must not be blank")
     escaped = identifier.replace('"', '""')
     return f'"{escaped}"'
-
-
-def _fixture_path(fixture: Fixture, base_dir: Path) -> Path:
-    if fixture.path.is_absolute():
-        return fixture.path
-    return base_dir / fixture.path
 
 
 class DuckDbSession:
@@ -31,7 +26,7 @@ class DuckDbSession:
         self._connection.close()
 
     def load_fixture(self, fixture: Fixture, base_dir: Path) -> None:
-        path = _fixture_path(fixture, base_dir)
+        path = resolve_fixture_path(fixture, base_dir)
         suffix = path.suffix.lower()
 
         if suffix == ".csv":
