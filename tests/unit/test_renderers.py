@@ -84,3 +84,48 @@ def test_render_json_serializes_results_object() -> None:
             }
         ]
     }
+
+
+def test_render_json_normalizes_non_finite_float_values() -> None:
+    rendered = render_json(
+        [
+            ContractRunResult(
+                name="net_revenue",
+                path="contract.yaml",
+                passed=False,
+                failure_category="result_mismatch",
+                actual_rows=[
+                    {
+                        "metric": float("nan"),
+                        "upper": float("inf"),
+                        "lower": float("-inf"),
+                    }
+                ],
+                checks=[
+                    CheckResult(
+                        passed=False,
+                        message="Rows differ",
+                        diffs=[
+                            ValueDiff(
+                                row_index=0,
+                                field="metric",
+                                expected=float("nan"),
+                                actual=float("inf"),
+                            )
+                        ],
+                    )
+                ],
+            )
+        ]
+    )
+
+    payload = json.loads(rendered)
+
+    assert "NaN" not in rendered
+    assert "Infinity" not in rendered
+    assert "-Infinity" not in rendered
+    assert payload["results"][0]["actual_rows"] == [
+        {"metric": None, "upper": None, "lower": None}
+    ]
+    assert payload["results"][0]["checks"][0]["diffs"][0]["expected"] is None
+    assert payload["results"][0]["checks"][0]["diffs"][0]["actual"] is None
