@@ -13,6 +13,19 @@ _FORBIDDEN_SQL_RE = re.compile(
     re.IGNORECASE,
 )
 _ALLOWED_START_RE = re.compile(r"\A(?:select|with)\b", re.IGNORECASE)
+_SIDE_EFFECT_FUNCTIONS = (
+    "checkpoint",
+    "force_checkpoint",
+    "truncate_duckdb_logs",
+    "enable_logging",
+    "disable_logging",
+    "enable_profiling",
+    "disable_profiling",
+)
+_SIDE_EFFECT_FUNCTION_RE = re.compile(
+    rf"(?<![A-Za-z0-9_])({'|'.join(_SIDE_EFFECT_FUNCTIONS)})\s*\(",
+    re.IGNORECASE,
+)
 
 
 def validate_read_only_query(sql: str) -> None:
@@ -33,4 +46,10 @@ def validate_read_only_query(sql: str) -> None:
     if forbidden_match is not None:
         raise UnsafeQueryError(
             f"query contains forbidden SQL operation: {forbidden_match.group(0)}"
+        )
+
+    side_effect_match = _SIDE_EFFECT_FUNCTION_RE.search(query)
+    if side_effect_match is not None:
+        raise UnsafeQueryError(
+            f"query calls side-effecting SQL function: {side_effect_match.group(1)}"
         )
