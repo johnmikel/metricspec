@@ -69,3 +69,31 @@ expect:
 
     assert not result.passed
     assert result.failure_category == "result_mismatch"
+
+
+def test_runner_reports_sql_shape_failure_before_execution(tmp_path: Path) -> None:
+    (tmp_path / "queries").mkdir()
+    (tmp_path / "queries" / "net_revenue.sql").write_text(
+        "select missing_column from missing_table", encoding="utf-8"
+    )
+    contract_path = tmp_path / "contract.yaml"
+    contract_path.write_text(
+        """
+schema_version: 1
+name: net_revenue
+adapter: duckdb
+query: queries/net_revenue.sql
+checks:
+  required_sql:
+    - is_test_order = false
+expect:
+  rows: []
+""".strip(),
+        encoding="utf-8",
+    )
+
+    result = run_loaded_contract(load_contract(contract_path))
+
+    assert not result.passed
+    assert result.failure_category == "sql_shape_mismatch"
+    assert any("Missing required SQL" in check.message for check in result.checks)

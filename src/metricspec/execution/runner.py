@@ -36,21 +36,28 @@ def run_loaded_contract(loaded: LoadedContract) -> ContractRunResult:
             checks=[CheckResult(passed=False, message=str(exc))],
         )
 
+    sql_result = check_sql_shape(sql, contract.checks)
+    if not sql_result.passed:
+        return ContractRunResult(
+            name=contract.name,
+            path=str(loaded.path),
+            passed=False,
+            failure_category="sql_shape_mismatch",
+            checks=[sql_result],
+        )
+
     adapter = DuckDbAdapter()
     with adapter.session() as session:
         for fixture in contract.fixtures:
             session.load_fixture(fixture, loaded.base_dir)
         actual_rows = session.execute(sql)
 
-    sql_result = check_sql_shape(sql, contract.checks)
     row_result = compare_rows(actual_rows, contract.expect)
     checks = [sql_result, row_result]
     passed = all(check.passed for check in checks)
 
     failure_category = None
-    if not sql_result.passed:
-        failure_category = "sql_shape_mismatch"
-    elif not row_result.passed:
+    if not row_result.passed:
         failure_category = "result_mismatch"
 
     return ContractRunResult(
