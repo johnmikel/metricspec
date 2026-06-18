@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from metricspec.contracts.models import Contract
+from metricspec.contracts.models import Contract, SqlShapeChecks
 
 
 def test_contract_accepts_minimal_valid_shape() -> None:
@@ -209,3 +209,20 @@ def test_contract_rejects_string_allow_extra_columns() -> None:
                 },
             }
         )
+
+
+@pytest.mark.parametrize(
+    "field",
+    [
+        "required_sql",
+        "forbidden_sql",
+        "required_tables",
+        "forbidden_tables",
+        "required_columns",
+        "forbidden_columns",
+    ],
+)
+@pytest.mark.parametrize("blank_value", ["", " "])
+def test_sql_shape_checks_reject_blank_entries(field: str, blank_value: str) -> None:
+    with pytest.raises(ValidationError):
+        SqlShapeChecks.model_validate({field: [blank_value]})

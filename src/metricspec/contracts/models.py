@@ -15,6 +15,12 @@ def _reject_blank_path(value: Any) -> Any:
     return value
 
 
+def _reject_blank_string(value: Any) -> Any:
+    if isinstance(value, str) and not value.strip():
+        raise ValueError("value must not be empty")
+    return value
+
+
 def _validate_tolerance_number(value: Any) -> float:
     if isinstance(value, bool) or not isinstance(value, int | float):
         raise ValueError("absolute tolerance must be a number")
@@ -25,6 +31,7 @@ def _validate_tolerance_number(value: Any) -> float:
 
 
 NonEmptyPath = Annotated[Path, BeforeValidator(_reject_blank_path)]
+NonEmptyString = Annotated[str, BeforeValidator(_reject_blank_string)]
 SchemaVersion = Annotated[int, Field(strict=True, ge=1, le=1)]
 ToleranceNumber = Annotated[float, BeforeValidator(_validate_tolerance_number), Field(ge=0)]
 
@@ -50,12 +57,12 @@ class Fixture(StrictModel):
 
 
 class SqlShapeChecks(StrictModel):
-    required_sql: list[str] = Field(default_factory=list)
-    forbidden_sql: list[str] = Field(default_factory=list)
-    required_tables: list[str] = Field(default_factory=list)
-    forbidden_tables: list[str] = Field(default_factory=list)
-    required_columns: list[str] = Field(default_factory=list)
-    forbidden_columns: list[str] = Field(default_factory=list)
+    required_sql: list[NonEmptyString] = Field(default_factory=list)
+    forbidden_sql: list[NonEmptyString] = Field(default_factory=list)
+    required_tables: list[NonEmptyString] = Field(default_factory=list)
+    forbidden_tables: list[NonEmptyString] = Field(default_factory=list)
+    required_columns: list[NonEmptyString] = Field(default_factory=list)
+    forbidden_columns: list[NonEmptyString] = Field(default_factory=list)
 
 
 class Contract(StrictModel):
