@@ -49,3 +49,19 @@ def test_validate_read_only_query_rejects_unsafe_queries(sql: str) -> None:
 def test_validate_read_only_query_rejects_duckdb_side_effect_functions(sql: str) -> None:
     with pytest.raises(UnsafeQueryError):
         validate_read_only_query(sql)
+
+
+@pytest.mark.parametrize(
+    "sql",
+    [
+        'select * from "checkpoint"()',
+        'select * from "force_checkpoint"()',
+        "select * from checkpoint /*x*/ ()",
+        "select * from checkpoint--x\n()",
+    ],
+)
+def test_validate_read_only_query_rejects_obfuscated_side_effect_functions(
+    sql: str,
+) -> None:
+    with pytest.raises(UnsafeQueryError):
+        validate_read_only_query(sql)

@@ -22,10 +22,13 @@ _SIDE_EFFECT_FUNCTIONS = (
     "enable_profiling",
     "disable_profiling",
 )
+_SIDE_EFFECT_FUNCTION_PATTERN = "|".join(re.escape(name) for name in _SIDE_EFFECT_FUNCTIONS)
 _SIDE_EFFECT_FUNCTION_RE = re.compile(
-    rf"(?<![A-Za-z0-9_])({'|'.join(_SIDE_EFFECT_FUNCTIONS)})\s*\(",
+    rf'(?<![A-Za-z0-9_])(?:"(?:{_SIDE_EFFECT_FUNCTION_PATTERN})"'
+    rf"|(?:{_SIDE_EFFECT_FUNCTION_PATTERN}))\s*\(",
     re.IGNORECASE,
 )
+_SQL_COMMENT_RE = re.compile(r"--[^\r\n]*|/\*[\s\S]*?\*/")
 
 
 def validate_read_only_query(sql: str) -> None:
@@ -48,8 +51,7 @@ def validate_read_only_query(sql: str) -> None:
             f"query contains forbidden SQL operation: {forbidden_match.group(0)}"
         )
 
-    side_effect_match = _SIDE_EFFECT_FUNCTION_RE.search(query)
+    side_effect_query = _SQL_COMMENT_RE.sub(" ", query)
+    side_effect_match = _SIDE_EFFECT_FUNCTION_RE.search(side_effect_query)
     if side_effect_match is not None:
-        raise UnsafeQueryError(
-            f"query calls side-effecting SQL function: {side_effect_match.group(1)}"
-        )
+        raise UnsafeQueryError("query calls side-effecting SQL function")
