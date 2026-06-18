@@ -107,6 +107,38 @@ def test_contract_rejects_string_tolerance() -> None:
         )
 
 
+def test_contract_rejects_infinite_tolerance() -> None:
+    with pytest.raises(ValidationError):
+        Contract.model_validate(
+            {
+                "schema_version": 1,
+                "name": "net_revenue",
+                "adapter": "duckdb",
+                "query": "queries/net_revenue.sql",
+                "expect": {
+                    "rows": [],
+                    "numeric_tolerance": {"absolute": float("inf")},
+                },
+            }
+        )
+
+
+def test_contract_rejects_nan_tolerance() -> None:
+    with pytest.raises(ValidationError):
+        Contract.model_validate(
+            {
+                "schema_version": 1,
+                "name": "net_revenue",
+                "adapter": "duckdb",
+                "query": "queries/net_revenue.sql",
+                "expect": {
+                    "rows": [],
+                    "numeric_tolerance": {"absolute": float("nan")},
+                },
+            }
+        )
+
+
 def test_contract_rejects_string_allow_extra_columns() -> None:
     with pytest.raises(ValidationError):
         Contract.model_validate(

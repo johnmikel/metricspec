@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
@@ -15,7 +16,10 @@ def _reject_blank_path(value: Any) -> Any:
 def _validate_tolerance_number(value: Any) -> float:
     if isinstance(value, bool) or not isinstance(value, int | float):
         raise ValueError("absolute tolerance must be a number")
-    return float(value)
+    numeric_value = float(value)
+    if not math.isfinite(numeric_value):
+        raise ValueError("absolute tolerance must be finite")
+    return numeric_value
 
 
 NonEmptyPath = Annotated[Path, BeforeValidator(_reject_blank_path)]
