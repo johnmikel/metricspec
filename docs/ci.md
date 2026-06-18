@@ -56,3 +56,20 @@ Before package publication, run CI from a repository checkout with
 `metricspec run` exits with `1` when any contract fails. The JSON and JUnit files
 are written before that exit, so `if: always()` lets CI upload artifacts for both
 passing and failing runs.
+
+## Publishing MetricSpec
+
+MetricSpec's own release workflow lives at `.github/workflows/publish.yml`.
+It builds the exact distribution artifacts once, checks them with Twine, stores
+them as a workflow artifact, and then publishes that artifact through PyPI
+Trusted Publishing.
+
+- Manual `workflow_dispatch` publishes to TestPyPI through the `testpypi`
+  GitHub environment.
+- Pushing a `v*` tag publishes to PyPI through the `pypi` GitHub environment.
+- Only the publish jobs request `id-token: write`; build and test jobs do not
+  receive publishing credentials.
+
+Before using the workflow, configure pending Trusted Publishers on both TestPyPI
+and PyPI for `.github/workflows/publish.yml` with matching environments
+`testpypi` and `pypi`. See [Release checklist](release.md) for the full process.

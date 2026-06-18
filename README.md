@@ -47,6 +47,7 @@ The stable v1 core is DuckDB fixture-based contract testing. Additional adapters
 - [Contract schema](docs/contract-schema.md)
 - [Adapters](docs/adapters.md)
 - [CI](docs/ci.md)
+- [Release checklist](docs/release.md)
 - [Security](docs/security.md)
 
 ## Security
