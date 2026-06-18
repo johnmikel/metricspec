@@ -1,0 +1,5 @@
+order_id,customer_id,region,gross_revenue,discount,tax,is_test_order
+1,100,EMEA,120.00,20.00,0.00,false
+2,101,EMEA,80.00,0.00,0.00,false
+3,102,AMER,200.00,50.00,0.00,false
+4,103,AMER,100.00,0.00,0.00,true

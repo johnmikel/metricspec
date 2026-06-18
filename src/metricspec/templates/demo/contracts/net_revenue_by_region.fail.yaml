@@ -1,0 +1,17 @@
+schema_version: 1
+name: net_revenue_by_region_fail
+description: Demonstrates a failing net revenue contract when refunds are omitted.
+adapter: duckdb
+fixtures:
+  - table: orders
+    path: ../fixtures/orders.csv
+  - table: refunds
+    path: ../fixtures/refunds.csv
+query: ../queries/net_revenue_by_region.fail.sql
+expect:
+  order_by: [region]
+  rows:
+    - region: AMER
+      net_revenue: 150.0
+    - region: EMEA
+      net_revenue: 100.0

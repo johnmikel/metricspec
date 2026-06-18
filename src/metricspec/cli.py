@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import shutil
+from importlib import resources
 from pathlib import Path
 from typing import NoReturn
 
@@ -60,6 +62,20 @@ def _run_contracts_or_exit(
         except OSError as error:
             _exit_cli_error(f"{loaded.path}: unable to run contract: {error}")
     return results
+
+
+@app.command()
+def init(kind: str = typer.Argument("demo")) -> None:
+    if kind != "demo":
+        typer.echo("Only 'demo' initialization is supported in v1", err=True)
+        raise typer.Exit(1)
+    target = Path("metricspec-demo")
+    if target.exists():
+        typer.echo(f"{target} already exists", err=True)
+        raise typer.Exit(1)
+    template = resources.files("metricspec").joinpath("templates/demo")
+    shutil.copytree(str(template), target)
+    typer.echo(f"Created {target}")
 
 
 @app.command()
