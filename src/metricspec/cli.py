@@ -12,7 +12,7 @@ from metricspec.contracts.loader import (
     load_contract,
 )
 from metricspec.diagnostics.renderers import render_human_result
-from metricspec.execution.runner import run_loaded_contract
+from metricspec.execution.runner import ContractRunResult, run_loaded_contract
 from metricspec.reports.json import render_json
 from metricspec.reports.junit import render_junit
 
@@ -24,9 +24,13 @@ def main() -> None:
     """MetricSpec command-line interface."""
 
 
-def _exit_contract_load_error(error: ContractLoadError) -> NoReturn:
-    typer.echo(str(error), err=True)
+def _exit_cli_error(message: str) -> NoReturn:
+    typer.echo(message, err=True)
     raise typer.Exit(1)
+
+
+def _exit_contract_load_error(error: ContractLoadError) -> NoReturn:
+    _exit_cli_error(str(error))
 
 
 def _discover_contracts_or_exit(path: Path) -> list[Path]:
@@ -46,15 +50,26 @@ def _load_contracts_or_exit(contract_paths: list[Path]) -> list[LoadedContract]:
     return loaded_contracts
 
 
+def _run_contracts_or_exit(
+    loaded_contracts: list[LoadedContract],
+) -> list[ContractRunResult]:
+    results: list[ContractRunResult] = []
+    for loaded in loaded_contracts:
+        try:
+            results.append(run_loaded_contract(loaded))
+        except OSError as error:
+            _exit_cli_error(f"{loaded.path}: unable to run contract: {error}")
+    return results
+
+
 @app.command()
 def validate(path: Path = typer.Argument(Path("contracts"))) -> None:  # noqa: B008
     contract_paths = _discover_contracts_or_exit(path)
     _load_contracts_or_exit(contract_paths)
 
-    typer.echo(
-        f"{len(contract_paths)} contract valid"
-        + ("" if len(contract_paths) == 1 else "s")
-    )
+    contract_count = len(contract_paths)
+    contract_label = "contract" if contract_count == 1 else "contracts"
+    typer.echo(f"{contract_count} {contract_label} valid")
 
 
 @app.command()
@@ -69,16 +84,19 @@ def run(  # noqa: B008
 ) -> None:
     contract_paths = _discover_contracts_or_exit(path)
     loaded_contracts = _load_contracts_or_exit(contract_paths)
-    results = [run_loaded_contract(loaded) for loaded in loaded_contracts]
+    results = _run_contracts_or_exit(loaded_contracts)
+
+    if junit is not None:
+        try:
+            junit.write_text(render_junit(results), encoding="utf-8")
+        except OSError as error:
+            _exit_cli_error(f"{junit}: unable to write JUnit report: {error}")
 
     if json_output:
         typer.echo(render_json(results))
     else:
         for result in results:
             typer.echo(render_human_result(result))
-
-    if junit is not None:
-        junit.write_text(render_junit(results), encoding="utf-8")
 
     if any(not result.passed for result in results):
         raise typer.Exit(1)
