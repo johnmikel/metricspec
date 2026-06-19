@@ -56,14 +56,19 @@ Create these labels before opening the repository for contributors:
 
 ## Badges
 
-After the public repository exists, replace `OWNER` and add these badges near the
-top of `README.md`:
+The README currently uses stable badges that do not depend on PyPI publication:
 
 ```markdown
-[![CI](https://github.com/OWNER/metricspec/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/metricspec/actions/workflows/ci.yml)
+[![CI](https://github.com/johnmikel/metricspec/actions/workflows/ci.yml/badge.svg)](https://github.com/johnmikel/metricspec/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+```
+
+After PyPI publication, add these package badges:
+
+```markdown
 [![PyPI](https://img.shields.io/pypi/v/metricspec.svg)](https://pypi.org/project/metricspec/)
 [![Python](https://img.shields.io/pypi/pyversions/metricspec.svg)](https://pypi.org/project/metricspec/)
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](../LICENSE)
 ```
 
 If the distribution package name changes, update the PyPI badge URLs while

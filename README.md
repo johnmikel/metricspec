@@ -1,5 +1,9 @@
 # MetricSpec
 
+[![CI](https://github.com/johnmikel/metricspec/actions/workflows/ci.yml/badge.svg)](https://github.com/johnmikel/metricspec/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+
 Unit tests for business metrics. Contract testing for analytical meaning.
 
 MetricSpec is a Python CLI for testing analytical contracts in local development and CI.
