@@ -1,0 +1,53 @@
+name: Feature request
+description: Propose a focused improvement to MetricSpec.
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        MetricSpec's v1 core is deterministic DuckDB fixture-based metric testing.
+        Feature requests are strongest when they preserve reproducibility,
+        explainability, and local/CI usability.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What metric-testing workflow is hard or impossible today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the smallest useful version of the feature.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - CLI
+        - Contract schema
+        - Adapter
+        - Diagnostics
+        - Reports/CI
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example
+      description: Show the command, YAML, or output you would like to use.
+      render: yaml
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false

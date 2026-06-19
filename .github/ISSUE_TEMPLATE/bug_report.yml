@@ -1,0 +1,68 @@
+name: Bug report
+description: Report a reproducible MetricSpec defect.
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve MetricSpec. Do not include credentials,
+        production data, secrets, or private customer data in this issue.
+  - type: input
+    id: version
+    attributes:
+      label: MetricSpec version
+      description: Run `metricspec --version` when available, or provide the git SHA.
+      placeholder: "0.1.0 / git SHA"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - CLI
+        - Contract schema
+        - DuckDB adapter
+        - Result comparison
+        - Report output
+        - Documentation
+        - Packaging/release
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Minimal commands, contract YAML, SQL, and fixture shape needed to reproduce.
+      placeholder: |
+        1. Run `metricspec init demo`
+        2. Edit ...
+        3. Run ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include concise output or traceback, redacted if needed.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: |
+        OS:
+        Python:
+        DuckDB:
+        Install method:
+    validations:
+      required: false

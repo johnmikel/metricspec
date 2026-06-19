@@ -7,6 +7,8 @@ name has to change before publication.
 ## One-Time Setup
 
 1. Create the public GitHub repository and push `main`.
+   - Use `docs/repository-settings.md` for repository description, topics,
+     branch protection, environments, and badges.
 2. Confirm the distribution package name.
    - If `metricspec` is available, keep `[project].name = "metricspec"`.
    - If it is not available, choose the nearest clear distribution name and keep
