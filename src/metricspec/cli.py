@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import shutil
-from importlib import resources
+from importlib import metadata, resources
 from pathlib import Path
 from typing import NoReturn
 
@@ -18,11 +18,35 @@ from metricspec.execution.runner import ContractRunResult, run_loaded_contract
 from metricspec.reports.json import render_json
 from metricspec.reports.junit import render_junit
 
+
+def _get_package_version() -> str:
+    try:
+        return metadata.version("metricspec")
+    except metadata.PackageNotFoundError:
+        from metricspec import __version__
+
+        return __version__
+
+
+def _version_callback(value: bool) -> None:
+    if value:
+        typer.echo(f"metricspec {_get_package_version()}")
+        raise typer.Exit()
+
+
 app = typer.Typer(no_args_is_help=True)
 
 
 @app.callback()
-def main() -> None:
+def main(
+    version: bool = typer.Option(
+        False,
+        "--version",
+        callback=_version_callback,
+        is_eager=True,
+        help="Show the installed MetricSpec version and exit.",
+    ),
+) -> None:
     """MetricSpec command-line interface."""
 
 

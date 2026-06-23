@@ -11,6 +11,20 @@ from metricspec.cli import app
 runner = CliRunner()
 
 
+def test_version_option_prints_installed_version() -> None:
+    result = runner.invoke(app, ["--version"])
+
+    assert result.exit_code == 0
+    assert result.output == "metricspec 0.1.0\n"
+
+
+def test_version_option_is_eager() -> None:
+    result = runner.invoke(app, ["--version", "run", "missing-contracts"])
+
+    assert result.exit_code == 0
+    assert result.output == "metricspec 0.1.0\n"
+
+
 def _write_contract(
     directory: Path,
     *,
