@@ -34,7 +34,11 @@ jobs:
       - name: Run metric contracts
         run: |
           mkdir -p reports
-          uv run metricspec run --json --junit reports/metricspec-junit.xml contracts > reports/metricspec-report.json
+          uv run metricspec run \
+            --github-summary \
+            --json \
+            --junit reports/metricspec-junit.xml \
+            contracts > reports/metricspec-report.json
 
       - name: Upload MetricSpec reports
         if: always()
@@ -52,6 +56,8 @@ Before package publication, run CI from a repository checkout with
 
 - JSON: Useful for custom CI summaries and debugging artifacts.
 - JUnit XML: Useful for test report integrations.
+- GitHub Actions summary: Use `--github-summary` to append a Markdown table and
+  failure details to `$GITHUB_STEP_SUMMARY`.
 
 `metricspec run` exits with `1` when any contract fails. The JSON and JUnit files
 are written before that exit, so `if: always()` lets CI upload artifacts for both
