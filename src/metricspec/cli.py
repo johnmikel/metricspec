@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import shutil
 from importlib import metadata, resources
 from pathlib import Path
@@ -15,6 +16,7 @@ from metricspec.contracts.loader import (
 )
 from metricspec.diagnostics.renderers import render_human_result
 from metricspec.execution.runner import ContractRunResult, run_loaded_contract
+from metricspec.reports.github import render_github_summary
 from metricspec.reports.json import render_json
 from metricspec.reports.junit import render_junit
 
@@ -88,6 +90,20 @@ def _run_contracts_or_exit(
     return results
 
 
+def _write_github_summary_or_exit(results: list[ContractRunResult]) -> None:
+    summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary_path is None:
+        _exit_cli_error("GITHUB_STEP_SUMMARY is not set")
+
+    try:
+        with Path(summary_path).open("a", encoding="utf-8") as summary_file:
+            summary_file.write(render_github_summary(results))
+    except OSError as error:
+        _exit_cli_error(
+            f"{summary_path}: unable to write GitHub Actions summary: {error}"
+        )
+
+
 @app.command()
 def init(kind: str = typer.Argument("demo")) -> None:
     if kind != "demo":
@@ -116,6 +132,11 @@ def validate(path: Path = typer.Argument(Path("contracts"))) -> None:  # noqa: B
 def run(  # noqa: B008
     path: Path = typer.Argument(Path("contracts")),  # noqa: B008
     json_output: bool = typer.Option(False, "--json", help="Emit JSON report."),  # noqa: B008
+    github_summary: bool = typer.Option(  # noqa: B008
+        False,
+        "--github-summary",
+        help="Append Markdown report to $GITHUB_STEP_SUMMARY.",
+    ),
     junit: Path | None = typer.Option(  # noqa: B008
         None,
         "--junit",
@@ -131,6 +152,9 @@ def run(  # noqa: B008
             junit.write_text(render_junit(results), encoding="utf-8")
         except OSError as error:
             _exit_cli_error(f"{junit}: unable to write JUnit report: {error}")
+
+    if github_summary:
+        _write_github_summary_or_exit(results)
 
     if json_output:
         typer.echo(render_json(results))
