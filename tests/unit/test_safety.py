@@ -65,3 +65,17 @@ def test_validate_read_only_query_rejects_obfuscated_side_effect_functions(
 ) -> None:
     with pytest.raises(UnsafeQueryError):
         validate_read_only_query(sql)
+
+
+@pytest.mark.parametrize(
+    "sql",
+    [
+        "select 'drop table orders' as message",
+        'select "drop" from orders',
+        "select 'value; still same statement' as message",
+        "-- drop table orders\nselect * from orders",
+        "select * from orders /* delete from orders */",
+    ],
+)
+def test_validate_read_only_query_ignores_comments_and_quoted_literals(sql: str) -> None:
+    validate_read_only_query(sql)

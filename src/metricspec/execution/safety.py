@@ -39,19 +39,48 @@ def validate_read_only_query(sql: str) -> None:
     if not query:
         raise UnsafeQueryError("query must not be empty")
 
-    if ";" in query:
+    query_without_comments = _SQL_COMMENT_RE.sub(" ", query).strip()
+    query_for_statement_checks = _mask_quoted_literals(query_without_comments)
+
+    if ";" in query_for_statement_checks:
         raise UnsafeQueryError("query must contain a single SQL statement")
 
-    if _ALLOWED_START_RE.match(query) is None:
+    if _ALLOWED_START_RE.match(query_without_comments) is None:
         raise UnsafeQueryError("query must start with SELECT or WITH")
 
-    forbidden_match = _FORBIDDEN_SQL_RE.search(query)
+    forbidden_match = _FORBIDDEN_SQL_RE.search(query_for_statement_checks)
     if forbidden_match is not None:
         raise UnsafeQueryError(
             f"query contains forbidden SQL operation: {forbidden_match.group(0)}"
         )
 
-    side_effect_query = _SQL_COMMENT_RE.sub(" ", query)
-    side_effect_match = _SIDE_EFFECT_FUNCTION_RE.search(side_effect_query)
+    side_effect_match = _SIDE_EFFECT_FUNCTION_RE.search(query_without_comments)
     if side_effect_match is not None:
         raise UnsafeQueryError("query calls side-effecting SQL function")
+
+
+def _mask_quoted_literals(sql: str) -> str:
+    masked: list[str] = []
+    index = 0
+    while index < len(sql):
+        char = sql[index]
+        if char not in {"'", '"'}:
+            masked.append(char)
+            index += 1
+            continue
+
+        quote = char
+        masked.append(" ")
+        index += 1
+        while index < len(sql):
+            masked.append(" ")
+            if sql[index] == quote:
+                if index + 1 < len(sql) and sql[index + 1] == quote:
+                    masked.append(" ")
+                    index += 2
+                    continue
+                index += 1
+                break
+            index += 1
+
+    return "".join(masked)
